@@ -10,7 +10,6 @@
 void setup()
 {
     Serial.begin(9600);
-    Serial.println("Hi");
     ARM arm = ARM();
     arm.RunTest();
 }

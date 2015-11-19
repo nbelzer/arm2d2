@@ -13,18 +13,24 @@ ARM::ARM(void)
 
 void ARM::RunTest(void)
 {
-    while(true)
-    {
-        controller.MoveServo(0, 40);
-        delay(100);
-        controller.MoveServo(1, 40);
-        controller.MoveServo(2, 40);
-        delay(2000);
-
-        controller.MoveServo(0, 150);
-        delay(100);
-        controller.MoveServo(1, 150);
-        controller.MoveServo(2, 150);
-        delay(2000);
-    }
+    controller.ResetServos();
+    
+    delay(1000);
+    
+    int bodyServos[2] = {1, 2};
+    controller.MoveServoOverTime(bodyServos, 40, 1000, 2);
+    
+    int servo[1] = {4};
+    controller.MoveServoOverTime(servo, 80, 1000);
+    servo[0] = 5;
+    controller.MoveServoOverTime(servo, 80, 1000);
+    
+    
+    // int servos[3] = {1, 2, 0};
+    
+    // for (int i = 2000; i > 0; i-=100)
+    // {
+    //     controller.MoveServoOverTime(servos, 100, i/2, 3);
+    //     controller.MoveServoOverTime(servos, 50, i/2, 3);
+    // }
 }

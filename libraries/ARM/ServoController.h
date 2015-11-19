@@ -10,9 +10,10 @@ class ServoController
 {
     public:
         ServoController(void);
-        void MoveServo(int servoId, int toDegrees);
-        // void MoveServos(int servos[], int toDegrees);
+        void MoveServo(int servoId, int toState);
+        void MoveServoOverTime(int *servoId, int toState, int inMillis, int servos = 1);
+        void ResetServos();
     private:
-        int rotationToPulse(int servoId, int rotation);
+        int rotationToPulse(int servoId, int state);
         Adafruit_PWMServoDriver _pwm;
 };
