@@ -24,13 +24,4 @@ void ARM::RunTest(void)
     controller.MoveServoOverTime(servo, 80, 1000);
     servo[0] = 5;
     controller.MoveServoOverTime(servo, 80, 1000);
-    
-    
-    // int servos[3] = {1, 2, 0};
-    
-    // for (int i = 2000; i > 0; i-=100)
-    // {
-    //     controller.MoveServoOverTime(servos, 100, i/2, 3);
-    //     controller.MoveServoOverTime(servos, 50, i/2, 3);
-    // }
 }
