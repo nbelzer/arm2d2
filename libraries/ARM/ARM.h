@@ -11,6 +11,7 @@ class ARM
     public:
         ARM(void);
         void RunTest(void);
+        void PickUpItemRoutine(void);
         ServoController controller;
     private:
 };

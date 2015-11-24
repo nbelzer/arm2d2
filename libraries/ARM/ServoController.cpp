@@ -13,8 +13,8 @@
 
 int amountOfServos = 7;
 int servoState[] = { 0,0,0,0,0,0,0 };
-int _minServo[] = { 210,190,190,210,300,300,0 };
-int _maxServo[] = { 590,480,480,590,400,400 };
+int _minServo[] = { 210,190,190,210,300,300,450 };
+int _maxServo[] = { 590,480,480,590,550,550,650 };
 
 Adafruit_PWMServoDriver _pwm = Adafruit_PWMServoDriver();
 
