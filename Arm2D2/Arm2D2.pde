@@ -11,7 +11,7 @@ void setup()
 {
     Serial.begin(9600);
     ARM arm = ARM();
-    arm.RunTest();
+    arm.PickUpItemRoutine();
 }
 
 /* Run the loop */
