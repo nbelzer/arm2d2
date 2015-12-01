@@ -9,12 +9,15 @@
 
 #define NELEMENTS(x) (sizeof(x)/sizeof((x)[0]));
 
+int amountOfServos = 7;
 /* The current state of each servo, this starts at zero if we reset all the servos before using them. */
 int servoState[] = { 0,0,0,0,0,0,0 };
 /* The pulse length to give to a servo if the state is 0 */
 int _minServo[] = { 210,190,190,210,300,300,450 };
 /* The pulse length to give to a servo if the state is 100 */
 int _maxServo[] = { 590,480,480,590,550,550,650 };
+
+
 
 Adafruit_PWMServoDriver _pwm = Adafruit_PWMServoDriver();
 
@@ -24,12 +27,11 @@ Adafruit_PWMServoDriver _pwm = Adafruit_PWMServoDriver();
     @param servoAmount
     The amount of servos that you have connected and want to controll.
 */
-ServoController::ServoController(int servoAmount)
+ServoController::ServoController()
 {
     _pwm.begin();
     _pwm.setPWMFreq(60);
     
-    amountOfServos = servoAmount;
 }
 
 /* PUBLIC FUNCTIONS */
@@ -49,6 +51,14 @@ void ServoController::MoveServo(int servoId, int toState)
     servoState[servoId] = toState;
 }
 
+/** MoveServoOverTime
+    Basicly a wrapper around MoveServosOverTime that makes it easy to just enter in one number instead of having to make an array first.
+*/
+void ServoController::MoveServoOverTime(int servoId, int toState, int inMillis)
+{
+    int servo[1] = { servoId };
+    MoveServosOverTime(servo, toState, inMillis, 1);
+}
 
 /** MoveServoOverTime
     Rotates a servo over time, it uses the MoveServo method to rotate the motor over a specific amount of time. 
@@ -67,7 +77,7 @@ void ServoController::MoveServo(int servoId, int toState)
     @param servos
     The amount of servos that you put in the *servoId array.
 */
-void ServoController::MoveServoOverTime(int *servoId, int toState, int inMillis, int servos)
+void ServoController::MoveServosOverTime(int *servoId, int toState, int inMillis, int servos)
 {
     int millisPassed = 0;
     int lastMillis = millis();
@@ -104,6 +114,14 @@ void ServoController::MoveServoOverTime(int *servoId, int toState, int inMillis,
             float newState = percentage * deltaState[i] + fromState[i];
             MoveServo(servoId[i], newState);
         }
+        /* Delay for safety, too many actions could be really hard to run for the processor and thus it needs a period to rest. */
+        delay(10);
+    }
+    
+    /* Set the new position in the servoState Array */
+    for (int i = 0; i < servos; i++)
+    {
+        servoState[servoId[i]] = toState;
     }
 }
 
@@ -118,7 +136,15 @@ void ServoController::ResetServos(void)
         MoveServo(s, 0);
 }
 
-/* rotationToPulse returns a pulse value according to a rotatin value from 0-1 */
+void ServoController::SoftReset(void)
+{
+    MoveServoOverTime(baseRotServo, 0, 1000);
+    MoveServosOverTime(bodyServos, 0, 1000, 2);
+    MoveServoOverTime(armServo, 0, 1000);
+    MoveServoOverTime(armRotServo, 0, 1000);
+    MoveServoOverTime(handRotServo, 0, 1000);
+    MoveServoOverTime(handServo, 0, 1000);
+}
 
 /** StateToPulse
     Converts the given state value to a pulse value.

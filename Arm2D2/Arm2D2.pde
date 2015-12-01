@@ -9,12 +9,12 @@
 /* Setup all the items */
 void setup()
 {
-    Serial.begin(9600);
     ARM arm = ARM();
-    arm.PickUpItemRoutine();
+    arm.CommandMode();
 }
 
 /* Run the loop */
 void loop()
 {
+
 }

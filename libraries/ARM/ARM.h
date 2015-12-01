@@ -5,13 +5,15 @@
 
 #include "Arduino.h"
 #include "ServoController.h"
+#include "DataReader.h"
 
 class ARM
 {
     public:
         ARM(void);
-        void RunTest(void);
+        void CommandMode(void);
         void PickUpItemRoutine(void);
         ServoController controller;
+        DataReader reader;
     private:
 };

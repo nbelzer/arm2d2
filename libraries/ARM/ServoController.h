@@ -9,12 +9,20 @@
 class ServoController
 {
     public:
-        ServoController(int servoAmount);
+        ServoController(void);
         void MoveServo(int servoId, int toState);
-        void MoveServoOverTime(int *servoId, int toState, int inMillis, int servos = 1);
+        void MoveServoOverTime(int servoId, int toState, int inMillis);
+        void MoveServosOverTime(int *servoId, int toState, int inMillis, int servos = 1);
         void ResetServos();
+        void SoftReset();
         
-        int amountOfServos;
+        /* All the servos that the ARM has */
+        int baseRotServo = 0, 
+            armServo = 3, 
+            armRotServo = 4, 
+            handRotServo = 5, 
+            handServo = 6;
+        int bodyServos[2] = {1, 2};
     private:
         int StateToPulse(int servoId, int state);
         
