@@ -57,7 +57,8 @@ void ServoController::MoveServo(int servoId, int toState)
 void ServoController::MoveServoOverTime(int servoId, int toState, int inMillis)
 {
     int servo[1] = { servoId };
-    MoveServosOverTime(servo, toState, inMillis, 1);
+    int position[1] = { toState }; 
+    MoveServosOverTime(servo, position, inMillis, 1);
 }
 
 /** MoveServoOverTime
@@ -77,7 +78,7 @@ void ServoController::MoveServoOverTime(int servoId, int toState, int inMillis)
     @param servos
     The amount of servos that you put in the *servoId array.
 */
-void ServoController::MoveServosOverTime(int *servoId, int toState, int inMillis, int servos)
+void ServoController::MoveServosOverTime(int *servoId, int *toState, int inMillis, int servos)
 {
     int millisPassed = 0;
     int lastMillis = millis();
@@ -92,7 +93,7 @@ void ServoController::MoveServosOverTime(int *servoId, int toState, int inMillis
     for (int i = 0; i < servos; i++)
     {
         fromState[i] = servoState[servoId[i]];
-        deltaState[i] = toState - fromState[i];
+        deltaState[i] = toState[i] - fromState[i];
     }
     
     /* Enter a while loop that executes for as long as you ordered the function to move the servos */

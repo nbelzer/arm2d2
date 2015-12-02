@@ -130,6 +130,9 @@ void ARM::CommandMode(void)
 
 void ARM::PickUpItemRoutine(void)
 {   
+    // Servo pair
+    int servos[3] = { controller.bodyServos, controller.armServo };
+    
     // Moving the arm to start position
     controller.MoveServoOverTime(controller.armServo, 30, 1000);
     controller.MoveServoOverTime(controller.armRotServo, 80, 1000);
@@ -141,9 +144,11 @@ void ARM::PickUpItemRoutine(void)
     controller.MoveServoOverTime(controller.handServo, 100, 1000);
     
     // Actual action
-    controller.MoveServoOverTime(controller.armServo, 50, 1000);
-    controller.MoveServosOverTime(controller.bodyServos, 40, 1000, 2);
-    controller.MoveServoOverTime(controller.armServo, 80, 1000);
+    // controller.MoveServoOverTime(controller.armServo, 50, 1000);
+    // controller.MoveServosOverTime(controller.bodyServos, 40, 1000, 2);
+    // controller.MoveServoOverTime(controller.armServo, 80, 1000);
+    int positions[3] = { 40, 40, 80 };
+    controller.MoveServosOverTime(servos, positions, 1500, 3);
     controller.MoveServoOverTime(controller.baseRotServo, 50, 1000);
     controller.MoveServoOverTime(controller.armRotServo, 95, 500);
     
@@ -153,7 +158,9 @@ void ARM::PickUpItemRoutine(void)
     // Reset servos
     controller.MoveServoOverTime(controller.armRotServo, 80, 500);
     controller.MoveServoOverTime(controller.baseRotServo, 0, 1000);
-    controller.MoveServoOverTime(controller.armServo, 50, 1000);
-    controller.MoveServosOverTime(controller.bodyServos, 0, 1000, 2);
-    controller.MoveServoOverTime(controller.armServo, 30, 1000);
+    // controller.MoveServoOverTime(controller.armServo, 50, 1000);
+    // controller.MoveServosOverTime(controller.bodyServos, 0, 1000, 2);
+    // controller.MoveServoOverTime(controller.armServo, 30, 1000);
+    positions[3] = { 0, 0, 30 };
+    controller.MoveServosOverTime(servos, positions, 1500, 3);
 }

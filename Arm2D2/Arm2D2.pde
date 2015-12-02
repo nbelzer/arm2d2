@@ -15,6 +15,4 @@ void setup()
 
 /* Run the loop */
 void loop()
-{
-
-}
+{ }

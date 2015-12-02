@@ -12,7 +12,7 @@ class ServoController
         ServoController(void);
         void MoveServo(int servoId, int toState);
         void MoveServoOverTime(int servoId, int toState, int inMillis);
-        void MoveServosOverTime(int *servoId, int toState, int inMillis, int servos = 1);
+        void MoveServosOverTime(int *servoId, int *toState, int inMillis, int servos = 1);
         void ResetServos();
         void SoftReset();
         
