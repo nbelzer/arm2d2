@@ -6,14 +6,6 @@
 #include "Arduino.h"
 #include "ARM.h";
 
-/* All the servos that the ARM has */
-// int baseRotServo = 0;
-// int bodyServos[] = {1, 2};
-// int armServo = 3;
-// int armRotServo = 4;
-// int handRotServo = 5;
-// int handServo = 6;
-
 ARM::ARM(void)
 {
     controller = ServoController();
@@ -59,8 +51,9 @@ void ARM::CommandMode(void)
         if (reader.ReadCommand("ARM standup") == 0)
         {
             Serial.write("\nPosing for the camera    ");
-            controller.MoveServoOverTime(controller.armServo, 30, 1000);
-            controller.MoveServoOverTime(controller.armRotServo, 80, 1000);
+            int startServos[2] = { controller.armServo, controller.armRotServo };
+            int startPositions[2] = { 30, 80 };
+            controller.MoveServosOverTime(startServos, startPositions, 1000, 2);
             Serial.write("\t[DONE]");
         }
         if (reader.ReadCommand("ARM stop") == 0)
@@ -106,7 +99,11 @@ void ARM::CommandMode(void)
             Serial.print(time);
 
             /* Exception for servo 1 and 2, they need to move together and thus when entering 1 or 2 they should both move. */
-            if (servoId == 1 || servoId == 2) controller.MoveServosOverTime(controller.bodyServos, state, time, 2);
+            if (servoId == 1 || servoId == 2) 
+            {
+                int positions[2] = { state, state };
+                controller.MoveServosOverTime(controller.bodyServos, positions, time, 2);
+            }
             else controller.MoveServoOverTime(servoId, state, time);
 
             Serial.write("\t[DONE]");
@@ -131,11 +128,12 @@ void ARM::CommandMode(void)
 void ARM::PickUpItemRoutine(void)
 {   
     // Servo pair
-    int servos[3] = { controller.bodyServos, controller.armServo };
+    int servos[3] = { 1, 2, controller.armServo };
     
+    int startServos[2] = { controller.armServo, controller.armRotServo };
+    int startPositions[2] = { 30, 80 };
     // Moving the arm to start position
-    controller.MoveServoOverTime(controller.armServo, 30, 1000);
-    controller.MoveServoOverTime(controller.armRotServo, 80, 1000);
+    controller.MoveServosOverTime(startServos, startPositions, 1000, 2);
     delay(4000);;
     
     // Grabbing the item
@@ -144,9 +142,6 @@ void ARM::PickUpItemRoutine(void)
     controller.MoveServoOverTime(controller.handServo, 100, 1000);
     
     // Actual action
-    // controller.MoveServoOverTime(controller.armServo, 50, 1000);
-    // controller.MoveServosOverTime(controller.bodyServos, 40, 1000, 2);
-    // controller.MoveServoOverTime(controller.armServo, 80, 1000);
     int positions[3] = { 40, 40, 80 };
     controller.MoveServosOverTime(servos, positions, 1500, 3);
     controller.MoveServoOverTime(controller.baseRotServo, 50, 1000);
@@ -158,9 +153,7 @@ void ARM::PickUpItemRoutine(void)
     // Reset servos
     controller.MoveServoOverTime(controller.armRotServo, 80, 500);
     controller.MoveServoOverTime(controller.baseRotServo, 0, 1000);
-    // controller.MoveServoOverTime(controller.armServo, 50, 1000);
-    // controller.MoveServosOverTime(controller.bodyServos, 0, 1000, 2);
-    // controller.MoveServoOverTime(controller.armServo, 30, 1000);
-    positions[3] = { 0, 0, 30 };
+    positions[0] = 0; positions[1] = 0
+    ; positions[2] = 30;
     controller.MoveServosOverTime(servos, positions, 1500, 3);
 }

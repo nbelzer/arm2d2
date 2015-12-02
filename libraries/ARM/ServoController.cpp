@@ -122,7 +122,7 @@ void ServoController::MoveServosOverTime(int *servoId, int *toState, int inMilli
     /* Set the new position in the servoState Array */
     for (int i = 0; i < servos; i++)
     {
-        servoState[servoId[i]] = toState;
+        servoState[servoId[i]] = toState[i];
     }
 }
 
@@ -139,12 +139,14 @@ void ServoController::ResetServos(void)
 
 void ServoController::SoftReset(void)
 {
-    MoveServoOverTime(baseRotServo, 0, 1000);
-    MoveServosOverTime(bodyServos, 0, 1000, 2);
-    MoveServoOverTime(armServo, 0, 1000);
-    MoveServoOverTime(armRotServo, 0, 1000);
-    MoveServoOverTime(handRotServo, 0, 1000);
-    MoveServoOverTime(handServo, 0, 1000);
+    // MoveServoOverTime(baseRotServo, 0, 1000);
+    int servos[7] = { 0, 1, 2, 3, 4, 5, 6 };
+    int pos[7] = { 0, 0, 0, 0, 0, 0, 0 };
+    MoveServosOverTime(servos, pos, 2000, 7);
+    // MoveServoOverTime(armServo, 0, 1000);
+    // MoveServoOverTime(armRotServo, 0, 1000);
+    // MoveServoOverTime(handRotServo, 0, 1000);
+    // MoveServoOverTime(handServo, 0, 1000);
 }
 
 /** StateToPulse
