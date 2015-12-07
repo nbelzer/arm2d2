@@ -15,7 +15,7 @@ int servoState[] = { 0,0,0,0,0,0,0 };
 /* The pulse length to give to a servo if the state is 0 */
 int _minServo[] = { 210,190,190,210,300,300,450 };
 /* The pulse length to give to a servo if the state is 100 */
-int _maxServo[] = { 590,480,480,590,550,550,650 };
+int _maxServo[] = { 590,600,600,590,550,550,650 };
 
 
 
@@ -31,7 +31,6 @@ ServoController::ServoController()
 {
     _pwm.begin();
     _pwm.setPWMFreq(60);
-    
 }
 
 /* PUBLIC FUNCTIONS */
