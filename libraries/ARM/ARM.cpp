@@ -51,7 +51,13 @@ void ARM::CommandMode(void)
         if (reader.ReadCommand("ARM.standup") == 0)
         {
             Serial.write("\nPosing for the camera    ");
+<<<<<<< HEAD
             Standup();
+=======
+            int startServos[2] = { controller.armServo, controller.armRotServo };
+            int startPositions[2] = { 30, 80 };
+            controller.MoveServosOverTime(startServos, startPositions, 1000, 2);
+>>>>>>> 037ba0780657954a216328cc1ae4aaeb2cb036a8
             Serial.write("\t[DONE]");
         }
         if (reader.ReadCommand("ARM.stop") == 0)
@@ -159,14 +165,18 @@ void ARM::CommandMode(void)
 
 void ARM::PickUpItemRoutine(void)
 {   
-    Standup();
+    ForwardFacing();
+    OpenClaw();
+    delay(4000);
+    CloseClaw();
+    
    // Servo pair
     int servos[3] = { 1, 2, controller.armServo };
     
-    // Grabbing the item
-    OpenClaw();
-    delay(1000);
-    CloseClaw();
+    int startServos[2] = { controller.armServo, controller.armRotServo };
+    int startPositions[2] = { 20, 80 };
+    // Moving the arm to start position
+    controller.MoveServosOverTime(startServos, startPositions, 1000, 2);
     
     // Actual action
     int positions[3] = { 40, 40, 80 };
@@ -183,6 +193,10 @@ void ARM::PickUpItemRoutine(void)
     positions[0] = 0; positions[1] = 0
     ; positions[2] = 30;
     controller.MoveServosOverTime(servos, positions, 1500, 3);
+    
+    startPositions[0] = 40; startPositions[1] = 0;
+    controller.MoveServosOverTime(startServos, startPositions, 1000, 2);
+    OpenClaw();
 }
 
 void ARM::OpenClaw(void)
