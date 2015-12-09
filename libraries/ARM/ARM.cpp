@@ -6,14 +6,6 @@
 #include "Arduino.h"
 #include "ARM.h";
 
-/* All the servos that the ARM has */
-// int baseRotServo = 0;
-// int bodyServos[] = {1, 2};
-// int armServo = 3;
-// int armRotServo = 4;
-// int handRotServo = 5;
-// int handServo = 6;
-
 ARM::ARM(void)
 {
     controller = ServoController();
@@ -32,38 +24,37 @@ void ARM::CommandMode(void)
         /* If some command was entered incorrectly it could get the entire program to be stuck, therefore we must clean the stored data */
         reader.CleanStored();
         
-        if (reader.ReadCommand("ARM pickup") == 0)
+        if (reader.ReadCommand("ARM.pickup") == 0)
         {
             Serial.write("\nPicking up item routine  ");
             PickUpItemRoutine();
             Serial.write("\t[DONE]");
         }
-        if (reader.ReadCommand("ARM reset") == 0)
+        if (reader.ReadCommand("ARM.reset") == 0)
         {
             Serial.write("\nSetting all servos to 0  ");
             controller.SoftReset();
             Serial.write("\t[DONE]");
         }
-        if (reader.ReadCommand("ARM open") == 0)
+        if (reader.ReadCommand("ARM.open") == 0)
         {
             Serial.write("\nOpening the claw         ");
             controller.MoveServoOverTime(controller.handServo, 0, 500);
             Serial.write("\t[DONE]");
         }
-        if (reader.ReadCommand("ARM close") == 0)
+        if (reader.ReadCommand("ARM.close") == 0)
         {
             Serial.write("\nClosing the claw         ");
             controller.MoveServoOverTime(controller.handServo, 100, 500);
             Serial.write("\t[DONE]");
         }
-        if (reader.ReadCommand("ARM standup") == 0)
+        if (reader.ReadCommand("ARM.standup") == 0)
         {
             Serial.write("\nPosing for the camera    ");
-            controller.MoveServoOverTime(controller.armServo, 30, 1000);
-            controller.MoveServoOverTime(controller.armRotServo, 80, 1000);
+            Standup();
             Serial.write("\t[DONE]");
         }
-        if (reader.ReadCommand("ARM stop") == 0)
+        if (reader.ReadCommand("ARM.stop") == 0)
         {
             Serial.write("\nARM2-D2 shutting down    ");
             controller.SoftReset();
@@ -71,7 +62,42 @@ void ARM::CommandMode(void)
             Serial.write("\n\nSee you later");
             running = false;
         }
-        if (reader.ReadCommand("ARM move") == 0)
+        if (reader.ReadCommand("ARM.throw") == 0)
+        {
+            Serial.write("\nGive me the item         ");
+            ThrowAway();
+            Serial.write("\t[DONE]");
+        }
+        if (reader.ReadCommand("ARM.forward") == 0)
+        {
+            Serial.write("\nMoving face forward      ");
+            ForwardFacing();
+            Serial.write("\t[DONE]");
+        }
+        if (reader.ReadCommand("ARM.hello") == 0)
+        {
+            Serial.write("\nHello!                   ");
+            SayHello();
+            Serial.write("\t[DONE]");
+        }
+        if (reader.ReadCommand("ARM.golf") == 0)
+        {
+            Serial.write("\nI love golfing           ");
+            Serial.write("\nHow hard should I hit [0..5]? ");
+            
+            bool waiting = true;
+            int mode = 0;
+            while (waiting)
+            {
+                while(Serial.available() == 0);
+                mode = Serial.parseInt();
+                if (mode >= 0 && mode <= 5) waiting = false;
+            }
+            Serial.write(mode);
+            Golf(mode);
+            Serial.write("\t[DONE]");
+        }
+        if (reader.ReadCommand("ARM.move") == 0)
         {
             bool waiting = true;
             
@@ -106,47 +132,43 @@ void ARM::CommandMode(void)
             Serial.print(time);
 
             /* Exception for servo 1 and 2, they need to move together and thus when entering 1 or 2 they should both move. */
-            if (servoId == 1 || servoId == 2) controller.MoveServosOverTime(controller.bodyServos, state, time, 2);
+            if (servoId == 1 || servoId == 2) 
+            {
+                int positions[2] = { state, state };
+                controller.MoveServosOverTime(controller.bodyServos, positions, time, 2);
+            }
             else controller.MoveServoOverTime(servoId, state, time);
 
             Serial.write("\t[DONE]");
         }
         if (reader.ReadCommand("ARM help") == 0)
         {
-            Serial.println("\n\nARM2-D2 Command Mode");
-            Serial.println("\nPossible commands:");
-            Serial.println("\tARM move\t\tA command to make a specific servo move.");
-            Serial.println("\tARM reset\t\tResets all the servos to the 0 position.");
-            Serial.println("\tARM open\t\tOpens the claw.");
-            Serial.println("\tARM close\t\tCloses the claw.");
-            Serial.println("\tARM standup\tMoves the arm to a 'standup' position.");
-            Serial.println("\tARM pickup\t\tA command to start the 'pick up item' routine.");
-            Serial.println("\tARM stop\t\tResets all the servos to 0 and stops the program.");
-            
-            Serial.print("\n");
+            Serial.println("\nDue to limitations in the Arduino hardware it is not possible to upload the entire command list here, please look at the documentation");
+            // Serial.println("\n\nARM2-D2 Command Mode");
+            // Serial.println("\nPossible commands:");
+            // Serial.println("\tARM.move\t\tA command to make a specific servo move.");
+            // Serial.println("\tARM.reset\t\tResets all the servos to the 0 position.");
+            // Serial.println("\tARM.open\t\tOpens the claw.");
+            // Serial.println("\tARM.close\t\tCloses the claw.");
+            // Serial.println("\tARM.standup\tMoves the arm to a 'standup' position.");
+            // Serial.println("\tARM.pickup\t\tA command to start the 'pick up item' routine.");
+            // Serial.println("\tARM.stop\t\tResets all the servos to 0 and stops the program.");
         }
     }
 }
 
 void ARM::PickUpItemRoutine(void)
 {   
-    // Servo pair
-    int servos[3] = { controller.bodyServos, controller.armServo };
-    
-    // Moving the arm to start position
-    controller.MoveServoOverTime(controller.armServo, 30, 1000);
-    controller.MoveServoOverTime(controller.armRotServo, 80, 1000);
-    delay(4000);;
+    Standup();
+   // Servo pair
+    int servos[3] = { 1, 2, controller.armServo };
     
     // Grabbing the item
-    controller.MoveServoOverTime(controller.handServo, 0, 1000);
+    OpenClaw();
     delay(1000);
-    controller.MoveServoOverTime(controller.handServo, 100, 1000);
+    CloseClaw();
     
     // Actual action
-    // controller.MoveServoOverTime(controller.armServo, 50, 1000);
-    // controller.MoveServosOverTime(controller.bodyServos, 40, 1000, 2);
-    // controller.MoveServoOverTime(controller.armServo, 80, 1000);
     int positions[3] = { 40, 40, 80 };
     controller.MoveServosOverTime(servos, positions, 1500, 3);
     controller.MoveServoOverTime(controller.baseRotServo, 50, 1000);
@@ -158,9 +180,173 @@ void ARM::PickUpItemRoutine(void)
     // Reset servos
     controller.MoveServoOverTime(controller.armRotServo, 80, 500);
     controller.MoveServoOverTime(controller.baseRotServo, 0, 1000);
-    // controller.MoveServoOverTime(controller.armServo, 50, 1000);
-    // controller.MoveServosOverTime(controller.bodyServos, 0, 1000, 2);
-    // controller.MoveServoOverTime(controller.armServo, 30, 1000);
-    positions[3] = { 0, 0, 30 };
+    positions[0] = 0; positions[1] = 0
+    ; positions[2] = 30;
     controller.MoveServosOverTime(servos, positions, 1500, 3);
+}
+
+void ARM::OpenClaw(void)
+{
+    controller.MoveServoOverTime(controller.handServo, 0, 500);
+}
+
+void ARM::CloseClaw(void)
+{
+    controller.MoveServoOverTime(controller.handServo, 100, 500);
+}
+
+void ARM::Standup(void)
+{   
+    int startServos[2] = { controller.armServo, controller.armRotServo };
+    int startPositions[2] = { 30, 80 };
+    
+    // Moving the arm to start position
+    controller.MoveServosOverTime(startServos, startPositions, 1000, 2);
+    delay(4000);; 
+}
+
+void ARM::ThrowAway(void)
+{
+    Standup();
+    // pickup the item
+    OpenClaw();
+    // wait for someone to give the item
+    delay(4000);
+    CloseClaw();
+    
+    int servos[5] = { 1, 2, controller.armServo, controller.armRotServo, controller.handServo };
+    int positions[5] { 0, 0, 40, 40, 100};
+    
+    // Fall back a bit
+    controller.MoveServosOverTime(servos, positions, 2000, 5);
+    
+    positions[0] = 40; positions[1] = 40; positions[2] = 50; positions[4] = 50; positions[5] = 0;
+    
+    // Throw the item
+    controller.MoveServosOverTime(servos, positions, 600, 5);
+}
+
+void ARM::SayHello(void)
+{
+    Standup();
+    
+    for (int i=0; i < 3; i++)
+    {
+        OpenClaw();
+        controller.MoveServoOverTime(controller.handRotServo, 100, 500);
+        delay(500);
+        controller.MoveServoOverTime(controller.handRotServo, 0, 500);
+        CloseClaw();
+    }
+}
+
+void ARM::ForwardFacing(void)
+{
+    controller.SoftReset();
+    Standup();
+    
+    int servos[4] = { 1, 2, controller.armServo, controller.armRotServo };
+    int positions[4] = { 80, 80, 40, 0 };
+    
+    controller.MoveServosOverTime(servos, positions, 2000, 4);
+    OpenClaw();
+}
+
+// mode 0 is low-power, mode 5 is high power;
+void ARM::Golf(int mode)
+{
+    ForwardFacing();
+    
+    controller.MoveServoOverTime(controller.baseRotServo, 0, 1000);
+    
+    int time = (5-mode) * 400;
+    controller.MoveServoOverTime(controller.baseRotServo, 20, time);
+}
+
+void ARM::RockPaperScissors(void)
+{
+    Standup();
+    bool running = true;
+    int wins = 0; int loses = 0;
+    Serial.write("\nWelcome to Rock Paper Scissors");
+    Serial.write("\nUse the command 'go' to start a game,");
+    Serial.write("\nthe command 'score' to see the score");
+    Serial.write("\nor use the command 'exit' to exit");
+    while(running)
+    {
+        if (reader.ReadCommand("Go")==0)
+        {
+            Standup();
+            Serial.write("\nHere we go");
+            uint8_t rps = rand() % 3; //0-2
+            {
+                int servos[2] = { controller.armServo, controller.armRotServo };
+                int sPositions[2] = { 10, 30 };
+                int ePositions[2] = { 30, 50 };
+                for (int i=0; i<3; i++)
+                {
+                    Serial.write("\n"); Serial.write(3-i);
+                    controller.MoveServosOverTime(servos, ePositions, 400, 2);
+                    controller.MoveServosOverTime(servos, sPositions, 600, 2);
+                }
+            }
+            {
+                int handServos[2] = { controller.handRotServo, controller.handServo };
+                int rPositions[2] = { 0, 100 };
+                int pPositions[2] = { 0, 0 };
+                int sPositions[2] = { 100, 0 };
+                int* positions;
+                
+                switch (rps)
+                {
+                    case 0: 
+                        positions = rPositions;
+                        Serial.write("\nRock!");
+                        break;
+                    case 1: 
+                        positions = sPositions;
+                        Serial.write("\nScissors!");
+                        break;
+                    case 2:
+                        positions = pPositions;
+                        Serial.write("\nPaper!");
+                        break;
+                }
+                
+                controller.MoveServosOverTime(handServos, positions, 800, 2);
+            }
+            
+            bool waiting = true;
+            Serial.write("\nDid I win [y/n]?");
+            while (waiting)
+            {
+                if (reader.ReadCommand("y")==0)
+                {
+                    Serial.write("\nI won!");
+                    waiting = false;
+                    wins++;
+                }
+                if (reader.ReadCommand("n")==0)
+                {
+                    Serial.write("\nI lost :(");
+                    waiting = false;
+                    loses++;
+                }
+            }
+            
+            Serial.write("\nCurrent score: ARM2-D2: "); 
+            Serial.write(wins);
+            Serial.write(" You: ");
+            Serial.write(loses);
+            Serial.write("\nWrite 'go' for another round or 'exit' to exit the game");
+        }
+        
+        if (reader.ReadCommand("score")==0)
+        {
+            Serial.write("\nCurrent score: ARM2-D2: "); 
+            Serial.write(wins);
+            Serial.write(" You: ");
+            Serial.write(loses);
+        }
+    }
 }

@@ -13,6 +13,15 @@ class ARM
         ARM(void);
         void CommandMode(void);
         void PickUpItemRoutine(void);
+        void OpenClaw(void);
+        void CloseClaw(void);
+        void Standup(void);
+        void ThrowAway(void);
+        void SayHello(void);
+        void ForwardFacing(void);
+        void Golf(int mode);
+        void RockPaperScissors(void);
+        
         ServoController controller;
         DataReader reader;
     private:
