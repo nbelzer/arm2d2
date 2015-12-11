@@ -19,7 +19,7 @@ class ARM
         void ThrowAway(void);
         void SayHello(void);
         void ForwardFacing(void);
-        void Golf(int mode);
+        void Golf();
         void RockPaperScissors(void);
         
         ServoController controller;
