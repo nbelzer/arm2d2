@@ -6,12 +6,16 @@
 #include "Arduino.h"
 #include "ARM.h";
 
+/** Create the variables we need later on */
 ARM::ARM(void)
 {
     controller = ServoController();
     controller.ResetServos();
     reader = DataReader();
 }
+/** CommandMode
+    Starts a loop that wil only end when giving a specific command. In this loop you will be able to give commands via the serial monitor included with the Arduino program.
+*/
 
 void ARM::CommandMode(void)
 {
@@ -163,6 +167,9 @@ void ARM::CommandMode(void)
     }
 }
 
+/** PickupItemRoutine
+    Picks up an item and places it behind it, the start position is the poition the arm is in at the moment of entering this command.
+*/
 void ARM::PickUpItemRoutine(void)
 {   
     OpenClaw();
@@ -191,16 +198,19 @@ void ARM::PickUpItemRoutine(void)
     OpenClaw();
 }
 
+/** Opens the claw */
 void ARM::OpenClaw(void)
 {
     controller.MoveServoOverTime(controller.handServo, 0, 500);
 }
 
+/** Closes the claw */
 void ARM::CloseClaw(void)
 {
     controller.MoveServoOverTime(controller.handServo, 100, 500);
 }
 
+/** Moves the arm to a 'standup' position */
 void ARM::Standup(void)
 {   
     int startServos[2] = { controller.armServo, controller.armRotServo };
@@ -211,6 +221,7 @@ void ARM::Standup(void)
     delay(4000);; 
 }
 
+/** Throw's away an item, usefull for throwing a dice */
 void ARM::ThrowAway(void)
 {
     controller.SoftReset();
@@ -237,6 +248,7 @@ void ARM::ThrowAway(void)
     controller.MoveServosOverTime(servos, positions, 600, 5);
 }
 
+/** The arm waves */
 void ARM::SayHello(void)
 {
     controller.SoftReset();
@@ -259,6 +271,7 @@ void ARM::SayHello(void)
     controller.SoftReset();
 }
 
+/** The arm gives a handshake, not really great but it kind of works, the arm itself is not strong enough for this to be possible */
 void ARM::HandShake(void)
 {
     controller.SoftReset();
@@ -283,6 +296,7 @@ void ARM::HandShake(void)
     controller.SoftReset();
 }
 
+/** Moves the arm so that the claw is just above the table */
 void ARM::ForwardFacing(void)
 {
     Standup();
@@ -295,6 +309,7 @@ void ARM::ForwardFacing(void)
 }
 
 // mode 0 is low-power, mode 5 is high power;
+/** Get's the arm in golf mode where you are able to enter in the strenght of the hit */
 void ARM::Golf()
 {
     controller.SoftReset();
@@ -317,6 +332,7 @@ void ARM::Golf()
     controller.MoveServoOverTime(controller.baseRotServo, 0, time);
 }
 
+/** Keeps moving the arm to a random position, nice for showing of */
 void ARM::RandomMoveARM(void)
 {
     int arm[4] = { 3, 4, 5, 6 };
@@ -345,6 +361,7 @@ void ARM::RandomMoveARM(void)
     controller.SoftReset();
 }
 
+/** Plays the game Rock Paper Scissors */
 void ARM::RockPaperScissors(void)
 {
     Standup();
