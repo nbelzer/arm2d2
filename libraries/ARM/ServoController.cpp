@@ -11,7 +11,7 @@ int amountOfServos = 7;
 /* The current state of each servo, this starts at zero if we reset all the servos before using them. */
 int servoState[] = { 0,0,0,0,0,0,0 };
 /* The pulse length to give to a servo if the state is 0 */
-int _minServo[] = { 210,190,190,210,250,300,450 };
+int _minServo[] = { 210,190,190,210,250,310,450 };
 /* The pulse length to give to a servo if the state is 100 */
 int _maxServo[] = { 590,600,600,590,550,550,650 };
 

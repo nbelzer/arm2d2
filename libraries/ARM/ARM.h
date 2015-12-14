@@ -18,9 +18,11 @@ class ARM
         void Standup(void);
         void ThrowAway(void);
         void SayHello(void);
+        void HandShake(void);
         void ForwardFacing(void);
-        void Golf();
+        void Golf(void);
         void RockPaperScissors(void);
+        void RandomMoveARM(void);
         
         ServoController controller;
         DataReader reader;

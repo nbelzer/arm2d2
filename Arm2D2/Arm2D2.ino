@@ -12,8 +12,17 @@ void setup()
 {
     ARM arm = ARM();
     arm.CommandMode();
+    
+    // while (true)
+    // {
+    //     arm.controller.MoveServoOverTime(3, 30, 1000);
+    //     delay(500);
+    //     arm.controller.MoveServoOverTime(3, 10, 1000);
+    //     delay(500);
+    // }
 }
 
 /* Run the loop */
 void loop()
-{ }
+{ 
+}

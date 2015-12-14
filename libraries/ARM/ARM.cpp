@@ -16,7 +16,7 @@ ARM::ARM(void)
 void ARM::CommandMode(void)
 {
 	Serial.write("ARM2-D2 at your service...\n");
-    Serial.write("\nEntered command mode, use commands to control the ARM,\nUse 'ARM help' to get more information about the commands.");
+    Serial.write("\nEntered command mode, use commands to control the ARM.");
     bool running = true;
     while(running)
     {
@@ -78,6 +78,18 @@ void ARM::CommandMode(void)
         {
             Serial.write("\nHello!");
             SayHello();
+            Serial.write("\t[DONE]");
+        }
+        if (reader.ReadCommand("ARM.shake") == 0)
+        {
+            Serial.write("\nHandShake!");
+            HandShake();
+            Serial.write("\t[DONE]");
+        }
+        if (reader.ReadCommand("ARM.random") == 0)
+        {
+            Serial.write("\nBe prepared!");
+            RandomMoveARM();
             Serial.write("\t[DONE]");
         }
         if (reader.ReadCommand("ARM.rps") == 0)
@@ -233,16 +245,42 @@ void ARM::SayHello(void)
     controller.MoveServoOverTime(controller.armServo, 30, 1000);
     controller.MoveServoOverTime(controller.armRotServo, 30, 1000);
     
-    int startpositions[2] = {10, 10};
-    int endPositions[2] = {40, 40};
+    int servos[3] = { controller.armServo, controller.handServo, controller.armRotServo };
+    int sPos[3] = { 10, 100, 60 };
+    int ePos[3] = { 40, 0, 30 };
     for (int i=0; i < 3; i++)
     {
-        OpenClaw();
-        controller.MoveServosOverTime(controller.bodyServos, startpositions, 1000, 2);
-        delay(500);
-        controller.MoveServosOverTime(controller.bodyServos, endPositions, 1000, 2);
-        CloseClaw();
+        controller.MoveServosOverTime(servos, sPos, 600, 3);
+        delay(100);
+        controller.MoveServosOverTime(servos, ePos, 600, 3);
+        delay(100);
     }
+    
+    controller.SoftReset();
+}
+
+void ARM::HandShake(void)
+{
+    controller.SoftReset();
+    Standup();
+    CloseClaw();
+    controller.MoveServoOverTime(controller.handRotServo, 100, 500);
+    controller.MoveServoOverTime(controller.armServo, 30, 1000);
+    controller.MoveServoOverTime(controller.armRotServo, 30, 1000);
+    
+    int servos[3] = { controller.armServo, controller.armRotServo };
+    int sPos[2] = { 10, 60 };
+    int ePos[2] = { 50, 90 };
+    for (int i=0; i < 2; i++)
+    {
+        controller.MoveServosOverTime(servos, sPos, 800, 2);
+        delay(100);
+        controller.MoveServosOverTime(servos, ePos, 900, 2);
+        delay(100);
+    }
+    
+    delay(1500);
+    controller.SoftReset();
 }
 
 void ARM::ForwardFacing(void)
@@ -250,7 +288,7 @@ void ARM::ForwardFacing(void)
     Standup();
     
     int servos[4] = { 1, 2, controller.armServo, controller.armRotServo };
-    int positions[4] = { 60, 60, 30, 0 };
+    int positions[4] = { 60, 70, 50, 15 };
     
     controller.MoveServosOverTime(servos, positions, 2000, 4);
     OpenClaw();
@@ -259,6 +297,7 @@ void ARM::ForwardFacing(void)
 // mode 0 is low-power, mode 5 is high power;
 void ARM::Golf()
 {
+    controller.SoftReset();
     ForwardFacing();
     CloseClaw();
     controller.MoveServoOverTime(controller.baseRotServo, 20, 1000);
@@ -276,6 +315,34 @@ void ARM::Golf()
     
     int time = (5-mode) * 400;
     controller.MoveServoOverTime(controller.baseRotServo, 0, time);
+}
+
+void ARM::RandomMoveARM(void)
+{
+    int arm[4] = { 3, 4, 5, 6 };
+    int positions[4] = { 0, 0, 0 ,0 };
+    int basepos[2] = { 20, 20 };
+    controller.MoveServosOverTime(controller.bodyServos, basepos, 1000, 2);
+    bool running = true;
+    Serial.print("\nRandomly switching between positions, \n
+    give the command 'exit' to exit the loop");
+    while(running)
+    {
+        delay(2000);
+        /* If some command was entered incorrectly it could get the entire program to be stuck, therefore we must clean the stored data */
+        reader.CleanStored();
+        for (int i=0; i<4; i++)
+        {
+            positions[i] = rand() % 100;
+            if (i == 0) positions[i] = max(positions[i], 25);
+        }  
+        controller.MoveServosOverTime(arm, positions, 3000, 4);
+        if (reader.ReadCommand("exit")==0)
+        {
+            running = false;
+        }
+    }
+    controller.SoftReset();
 }
 
 void ARM::RockPaperScissors(void)
@@ -296,7 +363,7 @@ void ARM::RockPaperScissors(void)
         if (reader.ReadCommand("go")==0)
         {
             Standup();
-            Serial.write("\nHere we go");
+            Serial.write("\nHere we go ");
             int rps = rand() % 3; //0-2
             {
                 int servos[2] = { controller.armServo, controller.armRotServo };
@@ -306,7 +373,7 @@ void ARM::RockPaperScissors(void)
                 {
                     Serial.print(3-i); Serial.print(" ");
                     controller.MoveServosOverTime(servos, ePositions, 400, 2);
-                    controller.MoveServosOverTime(servos, sPositions, 600, 2);
+                    controller.MoveServosOverTime(servos, sPositions, 400, 2);
                 }
             }
             {
@@ -361,6 +428,9 @@ void ARM::RockPaperScissors(void)
                     loses++;
                 }
             }
+            int handServos[2] = { controller.handRotServo, controller.handServo };
+            int endPositions[2] = { 0, 0 };
+            controller.MoveServosOverTime(handServos, endPositions, 600, 2);
             
             Serial.write("\nCurrent score: ARM2-D2: "); 
             Serial.print(wins);
@@ -378,6 +448,7 @@ void ARM::RockPaperScissors(void)
         }
         if (reader.ReadCommand("exit")==0)
         {
+            controller.SoftReset();
             running = false;
         }
     }
